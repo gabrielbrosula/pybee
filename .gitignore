@@ -1,2 +1,3 @@
 # Ignore virtualenv
 spelling_bee/
+.vscode
