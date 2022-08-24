@@ -4,6 +4,9 @@ from english_words import english_words_set
 import keyboard
 
 CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+PICKED_CHARS_LIST = ['N', 'M', 'R', 'E', 'G', 'A', 'I']
+rand_gen_letters = False
+
 
 # Generate a string of 7 letters
 def generate_letters():
@@ -39,9 +42,14 @@ def draw_letter_hexes(picked_chars):
     print(r"{}".format(letter_hex_str))
 
 # Check if the word is valid
-def is_word_valid(word, picked_chars):
+def is_word_valid(word, picked_chars, word_list, score):
 
     word_upper = word.upper()
+
+    # Check if word is long enough
+    if (len(word) <= 3):
+        print("Insufficient word length!")
+        return False
 
     # Check if the word contains only valid letters
     if any(c not in picked_chars for c in word_upper):
@@ -53,13 +61,17 @@ def is_word_valid(word, picked_chars):
         print("Missing center letter!")
         return False
 
-    # Check if the word is in the word list
+    # Check if the word is in english_words_set
     if (word not in english_words_set):
         print("Word not in word list!")
         return False
-    else:
-        print("Valid word!")
-        return True
+    
+    # Check if the user has already inputted the word
+    if (word in word_list):
+        print("Word already inputted!")
+        return False
+    
+    return True
     
 
 
@@ -68,15 +80,25 @@ def main():
     print("\nPress 'ESC' to quit.\n")
 
     print("The letters are: ")
-    picked_chars = generate_letters()
+    picked_chars = generate_letters() if rand_gen_letters else PICKED_CHARS_LIST
     draw_letter_hexes(picked_chars)
 
     # Get user input
     print("Make words from the letters shown above!")
+    print("Score: 0")
+
+    # List of inputted words
+    word_list = []
+    
+    # Current score
+    score = 0
 
     while True:
         word_input = input()
-        is_word_valid(word_input, picked_chars)
+        if (is_word_valid(word_input, picked_chars, word_list, score)):
+            word_list.append(word_input)
+            score += len(word_input)
+            print(f"Score: {score}")
 
         if keyboard.press_and_release('esc'):
             return
