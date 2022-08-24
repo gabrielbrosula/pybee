@@ -2,7 +2,7 @@ import random
 import keyboard
 import json
 
-CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+CHARS = "ABCDEFGHIJKLMNOPQRTUVWXYZ"
 PICKED_CHARS_LIST = ['N', 'M', 'R', 'E', 'G', 'A', 'I']
 rand_gen_letters = False
 
@@ -19,7 +19,7 @@ def generate_letters():
     picked_chars = set()
 
     while len(picked_chars) != 7:
-        num = random.randint(0, 25)
+        num = random.randint(0, len(CHARS) - 1)
         picked_chars.add(CHARS[num])
 
     return list(picked_chars)
@@ -79,6 +79,22 @@ def is_word_valid(word, picked_chars, word_list, words_dict):
     
     return True
 
+# Properly score a valid word based on NYT Spelling Bee rules
+def score_word(word, picked_chars):
+
+    word_score = 0
+
+    if len(word) == 4:
+        word_score = 1
+    else:
+        word_score = len(word)
+        # Detect pangram
+        if ( (len(word) >= 7) and (set(word.upper()) == set(picked_chars) )):
+            word_score += 7
+            print("Pangram!")
+    
+    return word_score
+
 def main():
 
     words_dict = load_words()
@@ -104,7 +120,7 @@ def main():
         word_input = input()
         if (is_word_valid(word_input, picked_chars, word_list, words_dict)):
             word_list.append(word_input)
-            score += len(word_input)
+            score += score_word(word_input, picked_chars)
             print(f"Score: {score}")
 
         if keyboard.press_and_release('esc'):
@@ -113,5 +129,4 @@ def main():
 
 if __name__ == "__main__":
     main()
-
 
