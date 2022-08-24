@@ -1,10 +1,18 @@
 import random
-import keyboard
 import json
+import re
+import time
 
 CHARS = "ABCDEFGHIJKLMNOPQRTUVWXYZ"
+
+# Parameters
 PICKED_CHARS_LIST = ['N', 'M', 'R', 'E', 'G', 'A', 'I']
-rand_gen_letters = False
+
+#Use PICKED_CHARS_LIST (if False) or randomly generate letters (if True)
+rand_gen_letters = False 
+
+# Print the time taken to execute of various functions
+measurePerf = True         
 
 # Load english words
 def load_words():
@@ -80,7 +88,7 @@ def is_word_valid(word, picked_chars, word_list, words_dict):
     return True
 
 # Properly score a valid word based on NYT Spelling Bee rules
-def score_word(word, picked_chars):
+def score_word(word, picked_chars, print_notif=True):
 
     word_score = 0
 
@@ -88,27 +96,77 @@ def score_word(word, picked_chars):
         word_score = 1
     else:
         word_score = len(word)
+
         # Detect pangram
         if ( (len(word) >= 7) and (set(word.upper()) == set(picked_chars) )):
             word_score += 7
-            print("Pangram!")
+
+            if print_notif: 
+                print("Pangram!")
     
     return word_score
+
+# Generate the list of all possible valid words
+def generate_valid_words(picked_chars, words_dict):
+
+    # Regex to match only words containing letters from a restricted alphabet
+    re_str = r'\b[' + ''.join(picked_chars) + r']+\b'
+    pat = re.compile(re_str, re.IGNORECASE)
+
+    # Measure performance of valid word generation
+    if measurePerf:
+        start = time.perf_counter()
+        valid_words_list = [word for word in words_dict.keys() if pat.match(word)]
+        end = time.perf_counter()
+        print(f"Found all valid words in {end - start:0.4f} seconds.")
+    else:
+        valid_words_list = [word for word in words_dict.keys() if pat.match(word)]
+    
+    return valid_words_list
+
+# Get the maximum possible score
+def get_max_score(valid_words_list, picked_chars):
+
+    max_score = 0
+
+    # Measure performance of getting the maximum score
+    if measurePerf:
+        start = time.perf_counter()
+
+        for word in valid_words_list:
+
+            # Disable printing of "Pangram!" notification with False parameter
+            max_score += score_word(word, picked_chars, False)
+
+        end = time.perf_counter()
+        print(f"Found max possible score in {end - start:0.4f} seconds.")
+    else: 
+        
+        for word in valid_words_list:
+            max_score += score_word(word, picked_chars, False)
+    
+    return max_score
 
 def main():
 
     words_dict = load_words()
 
     print("\nWelcome to PyBee, a Python implementation of New York Times' Spelling Bee!")
-    print("\nPress 'ESC' to quit.\n")
 
+    # Generate the letters and draw hex art
     print("The letters are: ")
     picked_chars = generate_letters() if rand_gen_letters else PICKED_CHARS_LIST
     draw_letter_hexes(picked_chars)
 
-    # Get user input
-    print("Make words from the letters shown above!")
-    print("Score: 0")
+    # Generate the valid words list
+    valid_words_list = generate_valid_words(picked_chars, words_dict)
+    max_score = get_max_score(valid_words_list, picked_chars)
+
+    print("\nMake words from the letters shown above!")
+    print(f"The number of valid words is {len(valid_words_list)} and the maximum possible score is {max_score}!")
+    print(f"How many words can you get?")
+
+    print("\nScore: 0")
 
     # List of inputted words
     word_list = []
@@ -122,9 +180,6 @@ def main():
             word_list.append(word_input)
             score += score_word(word_input, picked_chars)
             print(f"Score: {score}")
-
-        if keyboard.press_and_release('esc'):
-            return
 
 
 if __name__ == "__main__":
