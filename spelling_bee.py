@@ -1,11 +1,17 @@
 import random
-import string
-from english_words import english_words_set
 import keyboard
+import json
 
 CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 PICKED_CHARS_LIST = ['N', 'M', 'R', 'E', 'G', 'A', 'I']
 rand_gen_letters = False
+
+# Load english words
+def load_words():
+    with open("words_dictionary.json") as words_file:
+        words_dict = json.load(words_file)
+
+    return words_dict
 
 
 # Generate a string of 7 letters
@@ -42,7 +48,7 @@ def draw_letter_hexes(picked_chars):
     print(r"{}".format(letter_hex_str))
 
 # Check if the word is valid
-def is_word_valid(word, picked_chars, word_list, score):
+def is_word_valid(word, picked_chars, word_list, words_dict):
 
     word_upper = word.upper()
 
@@ -61,8 +67,8 @@ def is_word_valid(word, picked_chars, word_list, score):
         print("Missing center letter!")
         return False
 
-    # Check if the word is in english_words_set
-    if (word not in english_words_set):
+    # Check if the word is in the dictionary
+    if (word not in words_dict):
         print("Word not in word list!")
         return False
     
@@ -72,10 +78,11 @@ def is_word_valid(word, picked_chars, word_list, score):
         return False
     
     return True
-    
-
 
 def main():
+
+    words_dict = load_words()
+
     print("\nWelcome to PyBee, a Python implementation of New York Times' Spelling Bee!")
     print("\nPress 'ESC' to quit.\n")
 
@@ -95,7 +102,7 @@ def main():
 
     while True:
         word_input = input()
-        if (is_word_valid(word_input, picked_chars, word_list, score)):
+        if (is_word_valid(word_input, picked_chars, word_list, words_dict)):
             word_list.append(word_input)
             score += len(word_input)
             print(f"Score: {score}")
