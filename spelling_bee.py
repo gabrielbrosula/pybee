@@ -9,7 +9,7 @@ CHARS = "ABCDEFGHIJKLMNOPQRTUVWXYZ"
 PICKED_CHARS_LIST = ['N', 'M', 'R', 'E', 'G', 'A', 'I']
 
 #Use PICKED_CHARS_LIST (if False) or randomly generate letters (if True)
-rand_gen_letters = False 
+rand_gen_letters = True
 
 # Print the time taken to execute of various functions
 measurePerf = True         
@@ -23,6 +23,7 @@ def load_words():
 
 
 # Generate a string of 7 letters
+# TODO: Devise improved algorithm for letter set generation
 def generate_letters():
     picked_chars = set()
 
@@ -113,15 +114,17 @@ def generate_valid_words(picked_chars, words_dict):
     re_str = r'\b[' + ''.join(picked_chars) + r']+\b'
     pat = re.compile(re_str, re.IGNORECASE)
 
-    # Measure performance of valid word generation
+    start = time.perf_counter()
+    valid_words_list = [word for word in words_dict.keys() if (len(word) >= 4 and pat.match(word))]
+    end = time.perf_counter()
+
     if measurePerf:
-        start = time.perf_counter()
-        valid_words_list = [word for word in words_dict.keys() if pat.match(word)]
-        end = time.perf_counter()
         print(f"Found all valid words in {end - start:0.4f} seconds.")
-    else:
-        valid_words_list = [word for word in words_dict.keys() if pat.match(word)]
+   
     
+    if len(valid_words_list) < 1000:
+        print(valid_words_list)
+
     return valid_words_list
 
 # Get the maximum possible score
@@ -130,22 +133,30 @@ def get_max_score(valid_words_list, picked_chars):
     max_score = 0
 
     # Measure performance of getting the maximum score
-    if measurePerf:
-        start = time.perf_counter()
+    start = time.perf_counter()
 
-        for word in valid_words_list:
+    for word in valid_words_list:
 
             # Disable printing of "Pangram!" notification with False parameter
             max_score += score_word(word, picked_chars, False)
 
-        end = time.perf_counter()
-        print(f"Found max possible score in {end - start:0.4f} seconds.")
-    else: 
-        
-        for word in valid_words_list:
-            max_score += score_word(word, picked_chars, False)
+    end = time.perf_counter()
+    
+    if measurePerf: print(f"Found max possible score in {end - start:0.4f} seconds.")
     
     return max_score
+
+# Shuffle the picked characters EXCEPT for the middle character
+def shuffle_chars(picked_chars):
+    copy = picked_chars
+    mid_char = copy.pop(3)
+
+    random.shuffle(copy)
+
+    copy.insert(3, mid_char)
+
+    return copy
+
 
 def main():
 
@@ -158,7 +169,7 @@ def main():
     picked_chars = generate_letters() if rand_gen_letters else PICKED_CHARS_LIST
     draw_letter_hexes(picked_chars)
 
-    # Generate the valid words list
+    # Generate the valid words list and get the max score
     valid_words_list = generate_valid_words(picked_chars, words_dict)
     max_score = get_max_score(valid_words_list, picked_chars)
 
