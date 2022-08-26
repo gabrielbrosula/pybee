@@ -20,3 +20,5 @@ Currently written in pure Python. Contains only standard modules.
   - [ ] Show letters in their hexes
   - [ ] Display list of already-entered words
   - [ ] Display progress bar
+- [ ] Add mode to solve puzzles based on date
+  - [ ] Create web-scraping functionality to solve real puzzles

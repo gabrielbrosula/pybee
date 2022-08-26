@@ -2,17 +2,18 @@ import random
 import json
 import re
 import time
+import sys
 
 CHARS = "ABCDEFGHIJKLMNOPQRTUVWXYZ"
 
 # Parameters
-PICKED_CHARS_LIST = ['N', 'M', 'R', 'E', 'G', 'A', 'I']
+PICKED_CHARS_LIST = ['H', 'I', 'C', 'T', 'K', 'E', 'N']
 
 #Use PICKED_CHARS_LIST (if False) or randomly generate letters (if True)
 rand_gen_letters = True
 
 # Print the time taken to execute of various functions
-measurePerf = True         
+measurePerf = False      
 
 # Load english words
 def load_words():
@@ -110,20 +111,20 @@ def score_word(word, picked_chars, print_notif=True):
 # Generate the list of all possible valid words
 def generate_valid_words(picked_chars, words_dict):
 
+    mid_char = picked_chars[3].lower()
+    
     # Regex to match only words containing letters from a restricted alphabet
     re_str = r'\b[' + ''.join(picked_chars) + r']+\b'
     pat = re.compile(re_str, re.IGNORECASE)
 
     start = time.perf_counter()
-    valid_words_list = [word for word in words_dict.keys() if (len(word) >= 4 and pat.match(word))]
+    
+    # Ensure that middle character shows up in each word
+    valid_words_list = [word for word in words_dict.keys() if (len(word) >= 4 and pat.match(word) and mid_char in word)]
     end = time.perf_counter()
 
     if measurePerf:
         print(f"Found all valid words in {end - start:0.4f} seconds.")
-   
-    
-    if len(valid_words_list) < 1000:
-        print(valid_words_list)
 
     return valid_words_list
 
@@ -157,16 +158,40 @@ def shuffle_chars(picked_chars):
 
     return copy
 
+# Check validity of picked chars set the valid words list
+'''
+Ensure that the valid words list is:
+- not empty (and has enough words)
+- has at least one pangram
+'''
+def is_valid(picked_chars, words_dict):
+
+    if (len(picked_chars) == 0):
+        return False
+
+    valid_words_list = generate_valid_words(picked_chars, words_dict)
+
+    # Check if there is a pangram
+    has_pangram = any( [set(word.upper()) == set(picked_chars) for word in valid_words_list] )
+    
+    return len(valid_words_list) >= 20 and not has_pangram
 
 def main():
+
+    # Parse command-line arguments
+
 
     words_dict = load_words()
 
     print("\nWelcome to PyBee, a Python implementation of New York Times' Spelling Bee!")
 
     # Generate the letters and draw hex art
+    # Generate letters until a valid set is picked
+    picked_chars = []
+    while not is_valid(picked_chars, words_dict):
+        picked_chars = generate_letters()
+
     print("The letters are: ")
-    picked_chars = generate_letters() if rand_gen_letters else PICKED_CHARS_LIST
     draw_letter_hexes(picked_chars)
 
     # Generate the valid words list and get the max score
