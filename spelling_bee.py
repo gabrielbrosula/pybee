@@ -3,14 +3,9 @@ import json
 import re
 import time
 import sys
+import argparse
 
 CHARS = "ABCDEFGHIJKLMNOPQRTUVWXYZ"
-
-# Parameters
-PICKED_CHARS_LIST = ['H', 'I', 'C', 'T', 'K', 'E', 'N']
-
-#Use PICKED_CHARS_LIST (if False) or randomly generate letters (if True)
-rand_gen_letters = True
 
 # Print the time taken to execute of various functions
 measurePerf = False      
@@ -179,17 +174,48 @@ def is_valid(picked_chars, words_dict):
 def main():
 
     # Parse command-line arguments
+    parser = argparse.ArgumentParser(description="A Python implementation of New York Times' Spelling Bee!")
+    parser.add_argument('-m', '--mode', type=str, help='The Spelling Bee mode you want to play. The options are randoms, custom, and date ', default='random')
+    args = parser.parse_args()
 
-
+    picked_chars = []
+    date = ''
     words_dict = load_words()
+
+    # Generate the picked character list 
+    if args.mode == 'random':
+
+        while not is_valid(picked_chars, words_dict):
+            picked_chars = generate_letters()
+
+    if args.mode == 'custom':
+
+        pcl_input = input("Enter the custom letter set you want to use (first letter = central letter): ")
+
+        pcl_input.upper()
+
+        for c in pcl_input:
+            picked_chars.append(c)
+        
+        # Switch the first and central characters
+        picked_chars[3] = pcl_input[0]
+        picked_chars[0] = pcl_input[3]
+
+    elif args.mode == 'date':
+
+        date = input("Enter a date (yy-mm-dd): ")
+        date.replace('-', '')
+
+        # TODO: Retrieve the letters based on the date
+        # TODO: Retrieve the official answers list based on the date
+
+        # Date of the first puzzle
+        MAY_9_2018 = 1
 
     print("\nWelcome to PyBee, a Python implementation of New York Times' Spelling Bee!")
 
     # Generate the letters and draw hex art
     # Generate letters until a valid set is picked
-    picked_chars = []
-    while not is_valid(picked_chars, words_dict):
-        picked_chars = generate_letters()
 
     print("The letters are: ")
     draw_letter_hexes(picked_chars)
