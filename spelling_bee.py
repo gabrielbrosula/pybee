@@ -8,9 +8,11 @@ import argparse
 CHARS = "ABCDEFGHIJKLMNOPQRTUVWXYZ"
 
 # Print the time taken to execute of various functions
-measurePerf = False      
+measurePerf = False
 
 # Load english words
+
+
 def load_words():
     with open("words_dictionary.json") as words_file:
         words_dict = json.load(words_file)
@@ -30,6 +32,8 @@ def generate_letters():
     return list(picked_chars)
 
 # Draw ASCII ART of the characters
+
+
 def draw_letter_hexes(picked_chars):
     letter_hex_str = """
           ____
@@ -53,6 +57,8 @@ def draw_letter_hexes(picked_chars):
     print(r"{}".format(letter_hex_str))
 
 # Check if the word is valid
+
+
 def is_word_valid(word, picked_chars, word_list, words_dict):
 
     word_upper = word.upper()
@@ -76,15 +82,17 @@ def is_word_valid(word, picked_chars, word_list, words_dict):
     if (word not in words_dict):
         print("Word not in word list!")
         return False
-    
+
     # Check if the user has already inputted the word
     if (word in word_list):
         print("Word already inputted!")
         return False
-    
+
     return True
 
 # Properly score a valid word based on NYT Spelling Bee rules
+
+
 def score_word(word, picked_chars, print_notif=True):
 
     word_score = 0
@@ -95,27 +103,30 @@ def score_word(word, picked_chars, print_notif=True):
         word_score = len(word)
 
         # Detect pangram
-        if ( (len(word) >= 7) and (set(word.upper()) == set(picked_chars) )):
+        if ((len(word) >= 7) and (set(word.upper()) == set(picked_chars))):
             word_score += 7
 
-            if print_notif: 
+            if print_notif:
                 print("Pangram!")
-    
+
     return word_score
 
 # Generate the list of all possible valid words
+
+
 def generate_valid_words(picked_chars, words_dict):
 
     mid_char = picked_chars[3].lower()
-    
+
     # Regex to match only words containing letters from a restricted alphabet
     re_str = r'\b[' + ''.join(picked_chars) + r']+\b'
     pat = re.compile(re_str, re.IGNORECASE)
 
     start = time.perf_counter()
-    
+
     # Ensure that middle character shows up in each word
-    valid_words_list = [word for word in words_dict.keys() if (len(word) >= 4 and pat.match(word) and mid_char in word)]
+    valid_words_list = [word for word in words_dict.keys() if (
+        len(word) >= 4 and pat.match(word) and mid_char in word)]
     end = time.perf_counter()
 
     if measurePerf:
@@ -124,6 +135,8 @@ def generate_valid_words(picked_chars, words_dict):
     return valid_words_list
 
 # Get the maximum possible score
+
+
 def get_max_score(valid_words_list, picked_chars):
 
     max_score = 0
@@ -133,16 +146,19 @@ def get_max_score(valid_words_list, picked_chars):
 
     for word in valid_words_list:
 
-            # Disable printing of "Pangram!" notification with False parameter
-            max_score += score_word(word, picked_chars, False)
+        # Disable printing of "Pangram!" notification with False parameter
+        max_score += score_word(word, picked_chars, False)
 
     end = time.perf_counter()
-    
-    if measurePerf: print(f"Found max possible score in {end - start:0.4f} seconds.")
-    
+
+    if measurePerf:
+        print(f"Found max possible score in {end - start:0.4f} seconds.")
+
     return max_score
 
 # Shuffle the picked characters EXCEPT for the middle character
+
+
 def shuffle_chars(picked_chars):
     copy = picked_chars
     mid_char = copy.pop(3)
@@ -153,12 +169,15 @@ def shuffle_chars(picked_chars):
 
     return copy
 
+
 # Check validity of picked chars set the valid words list
 '''
 Ensure that the valid words list is:
 - not empty (and has enough words)
 - has at least one pangram
 '''
+
+
 def is_valid(picked_chars, words_dict):
 
     if (len(picked_chars) == 0):
@@ -167,22 +186,26 @@ def is_valid(picked_chars, words_dict):
     valid_words_list = generate_valid_words(picked_chars, words_dict)
 
     # Check if there is a pangram
-    has_pangram = any( [set(word.upper()) == set(picked_chars) for word in valid_words_list] )
-    
+    has_pangram = any([set(word.upper()) == set(picked_chars)
+                      for word in valid_words_list])
+
     return len(valid_words_list) >= 20 and not has_pangram
+
 
 def main():
 
     # Parse command-line arguments
-    parser = argparse.ArgumentParser(description="A Python implementation of New York Times' Spelling Bee!")
-    parser.add_argument('-m', '--mode', type=str, help='The Spelling Bee mode you want to play. The options are randoms, custom, and date ', default='random')
+    parser = argparse.ArgumentParser(
+        description="A Python implementation of New York Times' Spelling Bee!")
+    parser.add_argument('-m', '--mode', type=str,
+                        help='The Spelling Bee mode you want to play. The options are randoms, custom, and date ', default='random')
     args = parser.parse_args()
 
     picked_chars = []
     date = ''
     words_dict = load_words()
 
-    # Generate the picked character list 
+    # Generate the picked character list
     if args.mode == 'random':
 
         while not is_valid(picked_chars, words_dict):
@@ -190,13 +213,14 @@ def main():
 
     if args.mode == 'custom':
 
-        pcl_input = input("Enter the custom letter set you want to use (first letter = central letter): ")
+        pcl_input = input(
+            "Enter the custom letter set you want to use (first letter = central letter): ")
 
         pcl_input.upper()
 
         for c in pcl_input:
             picked_chars.append(c)
-        
+
         # Switch the first and central characters
         picked_chars[3] = pcl_input[0]
         picked_chars[0] = pcl_input[3]
@@ -225,14 +249,15 @@ def main():
     max_score = get_max_score(valid_words_list, picked_chars)
 
     print("\nMake words from the letters shown above!")
-    print(f"The number of valid words is {len(valid_words_list)} and the maximum possible score is {max_score}!")
+    print(
+        f"The number of valid words is {len(valid_words_list)} and the maximum possible score is {max_score}!")
     print(f"How many words can you get?")
 
     print("\nScore: 0")
 
     # List of inputted words
     word_list = []
-    
+
     # Current score
     score = 0
 
@@ -246,4 +271,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
