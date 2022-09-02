@@ -3,7 +3,7 @@
 A clone of New York Times' Spelling Bee written in Python!
 Currently, it uses a basic UI terminal, writing to stdin and stdout.
 
-![Custom Mode Example](https://media.giphy.com/media/vFKqnCdLPNOKc/giphy.gif)
+![Custom Mode Example](https://i.imgur.com/ECJIxL4.gif)
 
 ## To-Do:
 
